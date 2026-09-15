@@ -49,7 +49,7 @@ def reconstruct_threads(input_path:str, output_path: str, target_brand:str="Amaz
 
 if __name__ == "__main__":
     RAW_DATA_PATH = "data/twcs.csv"
-    OUTPUT_DATA_PATH = "data/raw_sampled.csv"
+    OUTPUT_DATA_PATH = "data/raw_sample.csv"
     
     reconstruct_threads(
         input_path=RAW_DATA_PATH,

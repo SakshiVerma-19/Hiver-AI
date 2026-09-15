@@ -1,0 +1,26 @@
+[
+    {
+      "id": 1,
+      "customer_tweet": "@AmazonHelp My order #12345 hasn't arrived yet and tracking says delayed.",
+      "true_intent": "Order/Tracking Status",
+      "expected_escalate": false,
+      "human_grounding_score": 5,
+      "human_tone_score": 5
+    },
+    {
+      "id": 2,
+      "customer_tweet": "@AmazonHelp You double charged my card! Fix this or I will take legal action and sue!",
+      "true_intent": "Billing/Payment Issue",
+      "expected_escalate": true,
+      "human_grounding_score": 5,
+      "human_tone_score": 5
+    },
+    {
+      "id": 3,
+      "customer_tweet": "@AmazonHelp Can't log into my account after resetting password.",
+      "true_intent": "Account Access/Authentication",
+      "expected_escalate": false,
+      "human_grounding_score": 4,
+      "human_tone_score": 5
+    }
+  ]

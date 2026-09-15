@@ -3,9 +3,13 @@ import pandas as pd
 import chromadb
 from chromadb.utils import embedding_functions
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_DB_PATH = os.path.join(BASE_DIR, "chroma_db")
+DEFAULT_SAMPLE_PATH = os.path.join(BASE_DIR, "data", "raw_sample.csv")
+
 class RAGRetriever:
-    def __init__(self, db_path: str = "./chroma_db", collection_name: str = "amazon_support_history"):
-        print("Initializing ChromaDB and local sentence-transformers embedding model...")
+    def __init__(self, db_path: str = DEFAULT_DB_PATH, collection_name: str = "amazon_support_history"):
+        print(f"Initializing ChromaDB at '{db_path}' and local embedding model...")
         self.client = chromadb.PersistentClient(path=db_path)
         
         # Local open-source embedding function
@@ -18,7 +22,7 @@ class RAGRetriever:
             embedding_function=self.embedding_fn
         )
 
-    def populate_index(self, sample_csv_path: str = "data/raw_sample.csv"):
+    def populate_index(self, sample_csv_path: str = DEFAULT_SAMPLE_PATH):
         """
         Loads preprocessed dataset into ChromaDB if the index is empty.
         """
@@ -41,12 +45,14 @@ class RAGRetriever:
             })
             ids.append(f"doc_{idx}")
 
-        # Add records to vector store
-        self.collection.add(
-            documents=documents,
-            metadatas=metadatas,
-            ids=ids
-        )
+        # Add records to vector store in safe batches
+        batch_size = 500
+        for i in range(0, len(documents), batch_size):
+            self.collection.add(
+                documents=documents[i:i + batch_size],
+                metadatas=metadatas[i:i + batch_size],
+                ids=ids[i:i + batch_size]
+            )
         print(f"Successfully indexed {len(documents)} resolution pairs into ChromaDB.")
 
     def retrieve_context(self, query: str, top_k: int = 2) -> list:
@@ -70,7 +76,7 @@ class RAGRetriever:
 
 if __name__ == "__main__":
     retriever = RAGRetriever()
-    retriever.populate_index("data/raw_sample.csv")
+    retriever.populate_index()
 
     test_query = "My package was supposed to arrive yesterday but the tracking number shows delayed."
     contexts = retriever.retrieve_context(test_query, top_k=2)

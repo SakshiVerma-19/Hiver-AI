@@ -2,31 +2,23 @@ import sys
 import os
 import json
 import re
-from enum import Enum
 from pydantic import BaseModel, Field
 from transformers import pipeline
 import torch
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-class IntentCategory(str, Enum):
-    ORDER_TRACKING = "Order/Tracking Status"
-    BILLING_PAYMENT = "Billing/Payment Issue"
-    CANCELLATION_REFUND = "Cancellation/Refund Request"
-    ACCOUNT_AUTH = "Account Access/Authentication"
-    PRODUCT_INQUIRY = "Product Inquiries/Tech Support"
-    FEEDBACK_COMPLAINT = "General Feedback/Complaints"
+class JudgeOutput(BaseModel):
+    grounding_score: int = Field(description="Score 1-5 rating factual reliance on context.")
+    tone_score: int = Field(description="Score 1-5 rating tone and length limits.")
+    rationale: str = Field(description="Short rationale for awarded scores.")
 
-class IntentClassificationResult(BaseModel):
-    predicted_intent: IntentCategory = Field(description="Most suitable category for customer query.")
-    confidence_score: float = Field(description="Confidence level between 0.0 and 1.0.")
-    reasoning: str = Field(description="Brief justification for chosen intent.")
-
-class IntentClassifier:
+class LLMJudge:
     def __init__(self, generator_pipeline=None, model_id: str = "Qwen/Qwen2.5-1.5B-Instruct"):
         if generator_pipeline is not None:
             self.pipe = generator_pipeline
         else:
+            print("Loading LLM-as-a-Judge Engine...")
             if torch.cuda.is_available():
                 device_map = "auto"
                 torch_dtype = torch.float16
@@ -41,21 +33,26 @@ class IntentClassifier:
                 device_map=device_map
             )
 
-    def classify(self, customer_message: str) -> IntentClassificationResult:
-        categories = [e.value for e in IntentCategory]
-        schema_json = json.dumps(IntentClassificationResult.model_json_schema(), indent=2)
-
+    def evaluate_response(self, customer_msg: str, response: str, retrieved_context: str) -> JudgeOutput:
+        schema_json = json.dumps(JudgeOutput.model_json_schema(), indent=2)
+        
         messages = [
             {
                 "role": "system",
                 "content": (
-                    "You are a customer intent classification system.\n"
-                    f"Classify the input query into EXACTLY ONE of these categories: {categories}\n"
-                    "Respond STRICTLY in JSON matching this JSON schema:\n"
-                    f"{schema_json}"
+                    "You are an impartial AI Support Quality Evaluator.\n"
+                    "Evaluate the generated customer support reply based on the original query and context.\n"
+                    "Respond STRICTLY in JSON matching this schema:\n"
+                    f"{schema_json}\n\n"
+                    "Rubric:\n"
+                    "- Grounding Score (1-5): 5 = Fully supported by context, 1 = Completely fabricated/hallucinated.\n"
+                    "- Tone Score (1-5): 5 = Highly professional and <= 280 chars, 1 = Aggressive or exceeds 280 chars.\n"
                 )
             },
-            {"role": "user", "content": f"Customer Message: '{customer_message}'"}
+            {
+                "role": "user", 
+                "content": f"Query: {customer_msg}\nRetrieved Context: {retrieved_context}\nGenerated Reply: {response}"
+            }
         ]
 
         prompt = self.pipe.tokenizer.apply_chat_template(
@@ -66,8 +63,7 @@ class IntentClassifier:
             prompt,
             max_new_tokens=150,
             do_sample=False,
-            return_full_text=False,
-            clean_up_tokenization_spaces=False
+            return_full_text=False
         )
 
         raw_text = outputs[0]["generated_text"].strip()
@@ -77,10 +73,9 @@ class IntentClassifier:
         elif "```" in raw_text:
             raw_text = raw_text.split("```")[1].split("```")[0].strip()
 
-        # Regex fallback to isolate JSON object if surrounding commentary exists
         json_match = re.search(r'\{.*\}', raw_text, re.DOTALL)
         if json_match:
             raw_text = json_match.group(0)
 
         parsed_json = json.loads(raw_text)
-        return IntentClassificationResult(**parsed_json)
+        return JudgeOutput(**parsed_json)
