@@ -55,21 +55,30 @@ class RAGRetriever:
             )
         print(f"Successfully indexed {len(documents)} resolution pairs into ChromaDB.")
 
-    def retrieve_context(self, query: str, top_k: int = 2) -> list:
+    def retrieve_context(self, query: str, intent: str = None, top_k: int = 3) -> list:
         """
         Retrieves top_k similar historical resolution pairs for grounding.
+        Optionally filters by intent category if metadata exists.
         """
-        results = self.collection.query(
-            query_texts=[query],
-            n_results=top_k
-        )
+        query_kwargs = {
+            "query_texts": [query],
+            "n_results": top_k
+        }
+        if intent:
+            query_kwargs["where"] = {"intent": intent}
+
+        try:
+            results = self.collection.query(**query_kwargs)
+        except Exception:
+            # Fallback to query without metadata filter if intent filter isn't present
+            results = self.collection.query(query_texts=[query], n_results=top_k)
 
         retrieved_contexts = []
         if results and "documents" in results and results["documents"]:
             for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
                 retrieved_contexts.append({
                     "historical_customer_query": doc,
-                    "historical_brand_response": meta["brand_response"]
+                    "historical_brand_response": meta.get("brand_response", "")
                 })
 
         return retrieved_contexts

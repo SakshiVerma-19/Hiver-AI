@@ -3,10 +3,10 @@ import os
 import json
 import re
 from pydantic import BaseModel, Field
-from transformers import pipeline
-import torch
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.llm import LLMClient
 
 class JudgeOutput(BaseModel):
     grounding_score: int = Field(description="Score 1-5 rating factual reliance on context.")
@@ -14,24 +14,11 @@ class JudgeOutput(BaseModel):
     rationale: str = Field(description="Short rationale for awarded scores.")
 
 class LLMJudge:
-    def __init__(self, generator_pipeline=None, model_id: str = "Qwen/Qwen2.5-1.5B-Instruct"):
-        if generator_pipeline is not None:
-            self.pipe = generator_pipeline
+    def __init__(self, llm_client: LLMClient = None, generator_pipeline=None):
+        if llm_client is not None:
+            self.llm = llm_client
         else:
-            print("Loading LLM-as-a-Judge Engine...")
-            if torch.cuda.is_available():
-                device_map = "auto"
-                torch_dtype = torch.float16
-            else:
-                device_map = None
-                torch_dtype = torch.float32
-
-            self.pipe = pipeline(
-                "text-generation",
-                model=model_id,
-                torch_dtype=torch_dtype,
-                device_map=device_map
-            )
+            self.llm = LLMClient.get_shared_client()
 
     def evaluate_response(self, customer_msg: str, response: str, retrieved_context: str) -> JudgeOutput:
         schema_json = json.dumps(JudgeOutput.model_json_schema(), indent=2)
@@ -55,18 +42,7 @@ class LLMJudge:
             }
         ]
 
-        prompt = self.pipe.tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
-
-        outputs = self.pipe(
-            prompt,
-            max_new_tokens=150,
-            do_sample=False,
-            return_full_text=False
-        )
-
-        raw_text = outputs[0]["generated_text"].strip()
+        raw_text = self.llm.chat_completion(messages, max_tokens=150, temperature=0.0, json_mode=True)
 
         if "```json" in raw_text:
             raw_text = raw_text.split("```json")[1].split("```")[0].strip()

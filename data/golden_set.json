@@ -1,26 +1,1802 @@
 [
-    {
-      "id": 1,
-      "customer_tweet": "@AmazonHelp My order #12345 hasn't arrived yet and tracking says delayed.",
-      "true_intent": "Order/Tracking Status",
-      "expected_escalate": false,
-      "human_grounding_score": 5,
-      "human_tone_score": 5
-    },
-    {
-      "id": 2,
-      "customer_tweet": "@AmazonHelp You double charged my card! Fix this or I will take legal action and sue!",
-      "true_intent": "Billing/Payment Issue",
-      "expected_escalate": true,
-      "human_grounding_score": 5,
-      "human_tone_score": 5
-    },
-    {
-      "id": 3,
-      "customer_tweet": "@AmazonHelp Can't log into my account after resetting password.",
-      "true_intent": "Account Access/Authentication",
-      "expected_escalate": false,
-      "human_grounding_score": 4,
-      "human_tone_score": 5
-    }
-  ]
+  {
+    "id": 1,
+    "customer_tweet": "@AmazonHelp My order #102-9482910 has been stuck in transit for 4 days. Can you update me?",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 2,
+    "customer_tweet": "@AmazonHelp Where is my package? Order id #402-9382101 was promised by 5 PM today.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 3,
+    "customer_tweet": "@AmazonHelp Tracking says package delivered to front porch but nothing is there! Order #847-1928374",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 4,
+    "customer_tweet": "@AmazonHelp Tracking number TRK928173465 shows courier delay in Memphis hub. Any estimate?",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 5,
+    "customer_tweet": "@AmazonHelp Order #302-8172635 shows out for delivery since 8 AM. Driver has not arrived.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 6,
+    "customer_tweet": "@AmazonHelp Tracking status has not updated for 72 hours for order #502-1827364.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 7,
+    "customer_tweet": "@AmazonHelp Package #111-2233445 was marked handed to resident but I was at work all day.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 8,
+    "customer_tweet": "@AmazonHelp Carrier says incorrect address on package #402-8172635. How do I fix it?",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 9,
+    "customer_tweet": "@AmazonHelp When will order #902-1827364 ship? It has been preparing for shipment for a week.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 10,
+    "customer_tweet": "@AmazonHelp Can I change delivery instructions for order #203-9182736 to back porch?",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 11,
+    "customer_tweet": "@AmazonHelp Tracking shows returned to sender for order #405-1928374. Why was this done?",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 12,
+    "customer_tweet": "@AmazonHelp My package is delayed again! Where is it? (no order id provided)",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": true,
+    "expected_escalation_reason": "MISSING_ORDER_ID",
+    "human_grounding_score": 3,
+    "human_tone_score": 4
+  },
+  {
+    "id": 13,
+    "customer_tweet": "@AmazonHelp Where is my order??? You guys always lose my stuff!!",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": true,
+    "expected_escalation_reason": "MISSING_ORDER_ID",
+    "human_grounding_score": 3,
+    "human_tone_score": 3
+  },
+  {
+    "id": 14,
+    "customer_tweet": "@AmazonHelp Package #918-2736451 says delivered in mailbox but it is completely empty.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 15,
+    "customer_tweet": "@AmazonHelp Order #102-7364519 was sent to my old address in Chicago instead of Dallas.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 16,
+    "customer_tweet": "@AmazonHelp Estimated delivery date changed three times for order #701-9283741.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 17,
+    "customer_tweet": "@AmazonHelp Tracking TRK102938475 says signature required. Can I sign electronically?",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 18,
+    "customer_tweet": "@AmazonHelp Package #601-2938475 was damaged during transit according to carrier note.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 19,
+    "customer_tweet": "@AmazonHelp Order #502-8374619 is split into 3 shipments. Will they arrive together?",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 20,
+    "customer_tweet": "@AmazonHelp Why is carrier asking for OTP for delivery of order #302-9182734?",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 21,
+    "customer_tweet": "@AmazonHelp Driver marked delivery attempted for order #401-2938471 but my doorbell never rang.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 22,
+    "customer_tweet": "@AmazonHelp Order #902-3847561 shows delivery delayed due to severe weather.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 23,
+    "customer_tweet": "@AmazonHelp Can I pick up order #102-8374619 from the local carrier depot instead?",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 24,
+    "customer_tweet": "@AmazonHelp Where is my package order #102-8374619? My SSN is 123-45-6789 to verify identity.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": true,
+    "expected_escalation_reason": "PII_EXPOSURE_RISK",
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 25,
+    "customer_tweet": "@AmazonHelp You lost my order #999-1112223 and if not delivered today my attorney will file a lawsuit and sue!",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": true,
+    "expected_escalation_reason": "LEGAL_RISK_DETECTED",
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 26,
+    "customer_tweet": "@AmazonHelp Tracking status for order #801-2938471 says held at customs clearance.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 27,
+    "customer_tweet": "@AmazonHelp Order #301-9283746 has no updates since departing the sorting center.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 28,
+    "customer_tweet": "@AmazonHelp Why was order #402-1928374 rescheduled for next Tuesday without asking me?",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 29,
+    "customer_tweet": "@AmazonHelp Package #201-9283745 was delivered to neighbor at apartment 4B by mistake.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 30,
+    "customer_tweet": "@AmazonHelp Is guaranteed delivery time by 1 PM still valid for order #102-3948571?",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 31,
+    "customer_tweet": "@AmazonHelp Order #701-8273645 has been in transit for 10 business days international.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 32,
+    "customer_tweet": "@AmazonHelp Driver took a photo of someone elses door for order #501-2938471 delivery.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 33,
+    "customer_tweet": "@AmazonHelp My package is lost! Find it right now or else!",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": true,
+    "expected_escalation_reason": "MISSING_ORDER_ID",
+    "human_grounding_score": 3,
+    "human_tone_score": 3
+  },
+  {
+    "id": 34,
+    "customer_tweet": "@AmazonHelp Order #601-9283745 status says parcel transferred to local post office.",
+    "true_intent": "Order/Tracking Status",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 35,
+    "customer_tweet": "@AmazonHelp Need to cancel order #102-8374619 before it ships. Cancel button disappeared.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 36,
+    "customer_tweet": "@AmazonHelp How long does refund take to reflect after returning order #402-9182734?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 37,
+    "customer_tweet": "@AmazonHelp I returned order #302-8172635 10 days ago but refund has not been issued yet.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 38,
+    "customer_tweet": "@AmazonHelp Accidentally ordered two identical items on order #502-1827364. Please cancel one.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 39,
+    "customer_tweet": "@AmazonHelp Return pickup was scheduled for yesterday for order #902-1827364 but nobody came.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 40,
+    "customer_tweet": "@AmazonHelp Can I get a refund to original payment method instead of gift card for order #203-9182736?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 41,
+    "customer_tweet": "@AmazonHelp Cancel order #405-1928374 immediately. I do not want it anymore.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 42,
+    "customer_tweet": "@AmazonHelp Drop off location refused my return package for order #918-2736451 due to label issue.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 43,
+    "customer_tweet": "@AmazonHelp Item arrived broken in order #102-7364519. How do I initiate a replacement or refund?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 44,
+    "customer_tweet": "@AmazonHelp Wrong item received in order #701-9283741. I ordered a keyboard and got shoes.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 45,
+    "customer_tweet": "@AmazonHelp Return tracking shows delivered to warehouse for order #601-2938475 but no refund email.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 46,
+    "customer_tweet": "@AmazonHelp Refund amount for order #502-8374619 is missing the return shipping fee reimbursement.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 47,
+    "customer_tweet": "@AmazonHelp Can I cancel my Subscribe & Save delivery scheduled for next month?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 48,
+    "customer_tweet": "@AmazonHelp I was issued a partial refund for order #302-9182734 but both items were returned.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 49,
+    "customer_tweet": "@AmazonHelp Cancel order #401-2938471 right now or my lawyer will sue for fraudulent fulfillment!",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": true,
+    "expected_escalation_reason": "LEGAL_RISK_DETECTED",
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 50,
+    "customer_tweet": "@AmazonHelp Need a refund on order #902-3847561, my credit card is 4111-2222-3333-4444 to credit.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": true,
+    "expected_escalation_reason": "PII_EXPOSURE_RISK",
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 51,
+    "customer_tweet": "@AmazonHelp Where can I print the prepaid return mailing label for order #102-8374619?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 52,
+    "customer_tweet": "@AmazonHelp Return window closed yesterday for order #801-2938471. Can you grant an exception?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 53,
+    "customer_tweet": "@AmazonHelp How do I exchange size L for XL on order #301-9283746?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 54,
+    "customer_tweet": "@AmazonHelp Carrier lost my return package for order #402-1928374. Will I still get my refund?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 55,
+    "customer_tweet": "@AmazonHelp Cancel order #201-9283745. The shipping address cannot receive packages.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 56,
+    "customer_tweet": "@AmazonHelp I requested cancellation 5 mins after placing order #102-3948571 but it shipped anyway.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 57,
+    "customer_tweet": "@AmazonHelp QR code for Kohls drop off is not scanning for order #701-8273645 return.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 58,
+    "customer_tweet": "@AmazonHelp Refund was sent to an expired debit card on order #501-2938471. How do I claim it?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 59,
+    "customer_tweet": "@AmazonHelp Need to cancel order placed an hour ago. Help!",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": true,
+    "expected_escalation_reason": "MISSING_ORDER_ID",
+    "human_grounding_score": 3,
+    "human_tone_score": 4
+  },
+  {
+    "id": 60,
+    "customer_tweet": "@AmazonHelp I received an empty box for order #601-9283745. Need full refund immediately.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 61,
+    "customer_tweet": "@AmazonHelp Cancel my pre-order for the game console on order #302-9182746.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 62,
+    "customer_tweet": "@AmazonHelp Can I return opened cosmetic items under order #402-9182745?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 63,
+    "customer_tweet": "@AmazonHelp Restocking fee was charged on order #501-9283746 return. Policy said free returns.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 64,
+    "customer_tweet": "@AmazonHelp How do I cancel digital software download code order #601-9283741?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 65,
+    "customer_tweet": "@AmazonHelp Package stolen from porch for order #701-9283742. Do you refund or replace?",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 66,
+    "customer_tweet": "@AmazonHelp Refund status says completed for order #801-9283743 but bank has no record.",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 67,
+    "customer_tweet": "@AmazonHelp Cancel everything I ever ordered right now!",
+    "true_intent": "Cancellation/Refund Request",
+    "expected_escalate": true,
+    "expected_escalation_reason": "LOW_INTENT_CONFIDENCE",
+    "human_grounding_score": 2,
+    "human_tone_score": 3
+  },
+  {
+    "id": 68,
+    "customer_tweet": "@AmazonHelp Locked out of my account due to 2-factor OTP not sending to my phone.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 69,
+    "customer_tweet": "@AmazonHelp Password reset email is never arriving in my inbox or spam folder.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 70,
+    "customer_tweet": "@AmazonHelp Someone in Russia attempted to log into my account. Need to secure it immediately.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 71,
+    "customer_tweet": "@AmazonHelp Lost access to authenticator app. How do I recover my Amazon account?",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 72,
+    "customer_tweet": "@AmazonHelp Why is my account suspended on grounds of suspicious activity?",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 73,
+    "customer_tweet": "@AmazonHelp How do I update the primary email address on my Amazon account without logging in?",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 74,
+    "customer_tweet": "@AmazonHelp Account says incorrect password even after resetting it twice.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 75,
+    "customer_tweet": "@AmazonHelp Phone number associated with 2SV verification is obsolete and disconnected.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 76,
+    "customer_tweet": "@AmazonHelp Help! My password is SecretPassword123 and email user@test.com, fix my login.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": true,
+    "expected_escalation_reason": "PII_EXPOSURE_RISK",
+    "human_grounding_score": 4,
+    "human_tone_score": 5
+  },
+  {
+    "id": 77,
+    "customer_tweet": "@AmazonHelp Unblock my account now or I will take legal action against your company!",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": true,
+    "expected_escalation_reason": "LEGAL_RISK_DETECTED",
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 78,
+    "customer_tweet": "@AmazonHelp Can I merge two Amazon accounts that use different email addresses?",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 79,
+    "customer_tweet": "@AmazonHelp Prompting for billing zip code verification but it says invalid.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 80,
+    "customer_tweet": "@AmazonHelp How do I remove an old device from authorized devices list?",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 81,
+    "customer_tweet": "@AmazonHelp Keeps looping back to login screen every time I click checkout.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 82,
+    "customer_tweet": "@AmazonHelp Account on hold asking for proof of address document upload.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 83,
+    "customer_tweet": "@AmazonHelp How do I set up passkey authentication on my iOS device for Amazon?",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 84,
+    "customer_tweet": "@AmazonHelp Receiving one-time passwords via SMS that I did not request. Is my account hacked?",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 85,
+    "customer_tweet": "@AmazonHelp Cannot access business account after employee who created it left company.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 86,
+    "customer_tweet": "@AmazonHelp Captcha is broken on login page, letters are unreadable.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 87,
+    "customer_tweet": "@AmazonHelp Need to deactivate or permanently delete my Amazon account and personal data.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 88,
+    "customer_tweet": "@AmazonHelp Getting error Code 403 Forbidden when accessing account settings.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 89,
+    "customer_tweet": "@AmazonHelp How do I transfer ownership of Kindle library to another family account?",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 90,
+    "customer_tweet": "@AmazonHelp Security question answers are not recognized during account recovery.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 91,
+    "customer_tweet": "@AmazonHelp Identity verification selfie upload fails with server error.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 92,
+    "customer_tweet": "@AmazonHelp My teen login is restricted from ordering without parent approval.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 93,
+    "customer_tweet": "@AmazonHelp Unauthorized order placed on my account at 3 AM. Account compromised.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 94,
+    "customer_tweet": "@AmazonHelp How do I unlink my Prime account from my ex-roommates Prime Video?",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 95,
+    "customer_tweet": "@AmazonHelp Account locked because of too many failed password attempts. How long is cooldown?",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 96,
+    "customer_tweet": "@AmazonHelp Email confirmation link says expired immediately upon clicking.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 97,
+    "customer_tweet": "@AmazonHelp Can customer service manually reset my 2-factor authentication over phone?",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 98,
+    "customer_tweet": "@AmazonHelp Cannot sign into Amazon app on Android, works on browser fine.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 99,
+    "customer_tweet": "@AmazonHelp Logged out of all devices unexpectedly across smart TV and phone.",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 100,
+    "customer_tweet": "@AmazonHelp Someone changed my account email without my consent!",
+    "true_intent": "Account Access/Authentication",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 101,
+    "customer_tweet": "@AmazonHelp You charged my card twice for order #102-8374619. Please refund the duplicate.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 102,
+    "customer_tweet": "@AmazonHelp Unrecognized charge of .99 on my bank statement from Amazon Prime.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 103,
+    "customer_tweet": "@AmazonHelp Gift card balance was not applied to order #402-9182734 at checkout.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 104,
+    "customer_tweet": "@AmazonHelp My credit card 5500-1111-2222-3333 was billed for an item I never bought!",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": true,
+    "expected_escalation_reason": "PII_EXPOSURE_RISK",
+    "human_grounding_score": 4,
+    "human_tone_score": 5
+  },
+  {
+    "id": 105,
+    "customer_tweet": "@AmazonHelp Reverse this unauthorized  charge immediately or I will file a lawsuit!",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": true,
+    "expected_escalation_reason": "LEGAL_RISK_DETECTED",
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 106,
+    "customer_tweet": "@AmazonHelp Promotional discount code SAVE20 was deducted at checkout but charged in full on receipt.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 107,
+    "customer_tweet": "@AmazonHelp Why was I charged sales tax on tax-exempt grocery items in order #502-1827364?",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 108,
+    "customer_tweet": "@AmazonHelp Prime annual renewal billed without sending prior reminder email.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 109,
+    "customer_tweet": "@AmazonHelp Payment method declined on order #902-1827364 but bank approved transaction.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 110,
+    "customer_tweet": "@AmazonHelp How do I download official VAT invoice for order #203-9182736?",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 111,
+    "customer_tweet": "@AmazonHelp Charge of .00 appeared from AMZN Digital that I did not authorize.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 112,
+    "customer_tweet": "@AmazonHelp Can I split payment between two different credit cards for order #405-1928374?",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 113,
+    "customer_tweet": "@AmazonHelp Monthly payment installment option failed for order #918-2736451.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 114,
+    "customer_tweet": "@AmazonHelp Charged currency conversion fee when purchasing on Amazon US from Canada.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 115,
+    "customer_tweet": "@AmazonHelp Order #102-7364519 cancelled by seller but pending authorization hold remains on card.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 116,
+    "customer_tweet": "@AmazonHelp Amazon Pay balance was deducted but merchant order did not complete.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 117,
+    "customer_tweet": "@AmazonHelp Why is shipping fee charged when I am an active Prime member on order #701-9283741?",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 118,
+    "customer_tweet": "@AmazonHelp Overcharged by  compared to price displayed at checkout for order #601-2938475.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 119,
+    "customer_tweet": "@AmazonHelp How do I remove an expired credit card from 1-Click payment settings?",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 120,
+    "customer_tweet": "@AmazonHelp Charged for Prime Video subscription when I only rented a single movie.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 121,
+    "customer_tweet": "@AmazonHelp Bank account direct debit bounced for order #502-8374619 due to processing delay.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 122,
+    "customer_tweet": "@AmazonHelp Unexpected restocking fee deducted from refund for order #302-9182734.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 123,
+    "customer_tweet": "@AmazonHelp Billing address discrepancy causing order payment to stay in pending status.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 124,
+    "customer_tweet": "@AmazonHelp Why does Amazon charge card before order actually dispatches?",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 125,
+    "customer_tweet": "@AmazonHelp Mystery recurring charge of .99 every 14th of the month on Chase statement.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 126,
+    "customer_tweet": "@AmazonHelp Refund issued to closed credit card account. How do funds reach me?",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 127,
+    "customer_tweet": "@AmazonHelp Invoice for order #401-2938471 displays incorrect business tax ID number.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 128,
+    "customer_tweet": "@AmazonHelp Card was charged for whole amount while order is split and half out of stock.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 129,
+    "customer_tweet": "@AmazonHelp Amazon Fresh delivery fee charged even though basket was over minimum threshold.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 130,
+    "customer_tweet": "@AmazonHelp Charged twice for Kindle Unlimited subscription this calendar month.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 131,
+    "customer_tweet": "@AmazonHelp Trade-in credit of  was revoked after trade-in was accepted and inspected.",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 132,
+    "customer_tweet": "@AmazonHelp Price dropped  two hours after placing order #902-3847561. Can I get price match?",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 133,
+    "customer_tweet": "@AmazonHelp Refund for damaged item in order #102-8374619 was short .",
+    "true_intent": "Billing/Payment Issue",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 134,
+    "customer_tweet": "@AmazonHelp Is Amazon website down? Search results returning Error 500 Internal Server Error.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 135,
+    "customer_tweet": "@AmazonHelp Prime Video app crashing on Samsung Smart TV when loading 4K streams.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 136,
+    "customer_tweet": "@AmazonHelp Alexa device says sorry I am having trouble understanding right now on all devices.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 137,
+    "customer_tweet": "@AmazonHelp Checkout button is grayed out and unresponsive on cart page across all browsers.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 138,
+    "customer_tweet": "@AmazonHelp Kindle Paperwhite frozen on screensaver and hard reset does not restart it.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 139,
+    "customer_tweet": "@AmazonHelp Amazon Music app constantly stops playing after 30 seconds on Android 14.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 140,
+    "customer_tweet": "@AmazonHelp Fire TV Stick reboot loop showing Amazon logo over and over.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 141,
+    "customer_tweet": "@AmazonHelp Cannot add items to cart on mobile app. Error says service unavailable.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 142,
+    "customer_tweet": "@AmazonHelp Cloud Cam recording history not syncing to cloud storage.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 143,
+    "customer_tweet": "@AmazonHelp AWS S3 outage affecting Amazon photos sync today? Uploads are failing.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 144,
+    "customer_tweet": "@AmazonHelp Echo Dot Bluetooth pairing drops connection every 5 minutes.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 145,
+    "customer_tweet": "@AmazonHelp Fix your broken website immediately or our law firm will seek class action damages!",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": true,
+    "expected_escalation_reason": "LEGAL_RISK_DETECTED",
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 146,
+    "customer_tweet": "@AmazonHelp Server error on checkout. Password to my server is admin123 if you need to debug.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": true,
+    "expected_escalation_reason": "PII_EXPOSURE_RISK",
+    "human_grounding_score": 3,
+    "human_tone_score": 5
+  },
+  {
+    "id": 147,
+    "customer_tweet": "@AmazonHelp One-click ordering button produces infinite spinner and fails silently.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 148,
+    "customer_tweet": "@AmazonHelp Prime Video subtitles are out of sync by 10 seconds on all episodes.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 149,
+    "customer_tweet": "@AmazonHelp Alexa smart home routines stopped triggering lights at sunset.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 150,
+    "customer_tweet": "@AmazonHelp Amazon app keeps crashing upon launch after latest update from App Store.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 151,
+    "customer_tweet": "@AmazonHelp Wishlist items disappeared completely. Page says wishlist is empty.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 152,
+    "customer_tweet": "@AmazonHelp Product reviews are not loading on product pages, shows empty tab.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 153,
+    "customer_tweet": "@AmazonHelp Audio is distorted and crackling through Fire TV soundbar audio output.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 154,
+    "customer_tweet": "@AmazonHelp Order history page shows Something went wrong on our end please try again.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 155,
+    "customer_tweet": "@AmazonHelp Notifications for lightning deals are firing hours after deal has expired.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 156,
+    "customer_tweet": "@AmazonHelp Alexa voice commands for Spotify show device offline in Alexa app.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 157,
+    "customer_tweet": "@AmazonHelp Fire tablet screen has vertical lines running across the display after update.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 158,
+    "customer_tweet": "@AmazonHelp Delivery map live tracking says GPS connection lost on driver vehicle.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 159,
+    "customer_tweet": "@AmazonHelp 2-step verification page throws SSL certificate error on Safari.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 160,
+    "customer_tweet": "@AmazonHelp Prime Video video player displays error code 7031 across Chrome on Mac.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 161,
+    "customer_tweet": "@AmazonHelp Kindle books bought today are not downloading to Kindle Oasis.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 162,
+    "customer_tweet": "@AmazonHelp Filter by Prime-eligible items button is missing on search filter panel.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 163,
+    "customer_tweet": "@AmazonHelp Alexa drop-in feature between Echo Show devices gives continuous busy tone.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 164,
+    "customer_tweet": "@AmazonHelp Amazon Kids+ profile locks tablet with time limit error even when unlocked.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 165,
+    "customer_tweet": "@AmazonHelp Customer service chat widget does not load in Chrome incognito mode.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 166,
+    "customer_tweet": "@AmazonHelp Smart plug loses Wi-Fi setup every time router restarts.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 167,
+    "customer_tweet": "@AmazonHelp Website navigation bar drops down behind page content on Firefox.",
+    "true_intent": "Service Outage/Technical Bug",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 168,
+    "customer_tweet": "@AmazonHelp Does Amazon Prime student discount require college email verification every year?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 169,
+    "customer_tweet": "@AmazonHelp What are the dimensions and weight limits for Amazon Locker pickup deliveries?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 170,
+    "customer_tweet": "@AmazonHelp How do I contact a third-party marketplace seller regarding warranty inquiries?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 171,
+    "customer_tweet": "@AmazonHelp Are Amazon gift cards purchased in the USA redeemable on Amazon UK?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 172,
+    "customer_tweet": "@AmazonHelp Can I schedule an Amazon delivery for a specific weekend time slot?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 173,
+    "customer_tweet": "@AmazonHelp What is the policy for recycling old electronic devices and Kindle readers?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 174,
+    "customer_tweet": "@AmazonHelp Where can I view the terms and conditions for Prime Day promotional credits?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 175,
+    "customer_tweet": "@AmazonHelp Does Amazon deliver to PO Box addresses via USPS?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 176,
+    "customer_tweet": "@AmazonHelp Your customer support was extremely rude to me today on phone call!",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 177,
+    "customer_tweet": "@AmazonHelp Love the new packaging with reduced cardboard waste. Great environmental initiative!",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 178,
+    "customer_tweet": "@AmazonHelp I want to report a seller sending unsolicited packages under brushing scheme.",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 179,
+    "customer_tweet": "@AmazonHelp How do I join the Amazon Vine reviewer program by invitation?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 180,
+    "customer_tweet": "@AmazonHelp Can two household members share a single Prime membership benefits?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 181,
+    "customer_tweet": "@AmazonHelp Answer this question right now or my attorney will drag you to court!",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": true,
+    "expected_escalation_reason": "LEGAL_RISK_DETECTED",
+    "human_grounding_score": 4,
+    "human_tone_score": 5
+  },
+  {
+    "id": 182,
+    "customer_tweet": "@AmazonHelp Here is my SSN 987-65-4321, tell me what benefits my account has.",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": true,
+    "expected_escalation_reason": "PII_EXPOSURE_RISK",
+    "human_grounding_score": 3,
+    "human_tone_score": 5
+  },
+  {
+    "id": 183,
+    "customer_tweet": "@AmazonHelp What is the maximum dollar value allowed on an Amazon e-gift card?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 184,
+    "customer_tweet": "@AmazonHelp How do I leave feedback for delivery driver who went above and beyond?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 185,
+    "customer_tweet": "@AmazonHelp Does Amazon offer price match guarantees against retail competitor prices?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 186,
+    "customer_tweet": "@AmazonHelp Can I pay with cash at Amazon Go stores or is an app required?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 187,
+    "customer_tweet": "@AmazonHelp What is the manufacturer warranty duration on refurbished Amazon Renewed laptops?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 188,
+    "customer_tweet": "@AmazonHelp Delivery driver threw box over high gate and fragile items inside shattered.",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 189,
+    "customer_tweet": "@AmazonHelp How do I opt out of Amazon promotional marketing emails and SMS texts?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 190,
+    "customer_tweet": "@AmazonHelp Are Amazon Fresh grocery deliveries handled by dedicated temperature-controlled vans?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 191,
+    "customer_tweet": "@AmazonHelp How do I suggest a product feature for Kindle reading app on iPad?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 192,
+    "customer_tweet": "@AmazonHelp Hello, is someone there?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": true,
+    "expected_escalation_reason": "LOW_INTENT_CONFIDENCE",
+    "human_grounding_score": 2,
+    "human_tone_score": 4
+  },
+  {
+    "id": 193,
+    "customer_tweet": "@AmazonHelp Tell me something interesting about shopping today.",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": true,
+    "expected_escalation_reason": "LOW_INTENT_CONFIDENCE",
+    "human_grounding_score": 2,
+    "human_tone_score": 3
+  },
+  {
+    "id": 194,
+    "customer_tweet": "@AmazonHelp How do I submit an application for Amazon author publishing account?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 195,
+    "customer_tweet": "@AmazonHelp Can Amazon gift card balance be transferred to another persons balance?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 196,
+    "customer_tweet": "@AmazonHelp What are the return policy differences between Amazon fulfilled and merchant fulfilled?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 197,
+    "customer_tweet": "@AmazonHelp Great job on fast delivery yesterday for my mothers birthday present!",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 198,
+    "customer_tweet": "@AmazonHelp Why are some product reviews marked with Verified Purchase badge and others not?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 199,
+    "customer_tweet": "@AmazonHelp Can I hire professional installation through Amazon Home Services for ceiling fan?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  },
+  {
+    "id": 200,
+    "customer_tweet": "@AmazonHelp How does Amazon protect buyers under the A-to-z Guarantee claim policy?",
+    "true_intent": "General Inquiry/Feedback",
+    "expected_escalate": false,
+    "expected_escalation_reason": null,
+    "human_grounding_score": 5,
+    "human_tone_score": 5
+  }
+]

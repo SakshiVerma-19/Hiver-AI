@@ -4,18 +4,18 @@ import json
 import re
 from enum import Enum
 from pydantic import BaseModel, Field
-from transformers import pipeline
-import torch
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from src.llm import LLMClient
+
 class IntentCategory(str, Enum):
     ORDER_TRACKING = "Order/Tracking Status"
-    BILLING_PAYMENT = "Billing/Payment Issue"
     CANCELLATION_REFUND = "Cancellation/Refund Request"
     ACCOUNT_AUTH = "Account Access/Authentication"
-    PRODUCT_INQUIRY = "Product Inquiries/Tech Support"
-    FEEDBACK_COMPLAINT = "General Feedback/Complaints"
+    BILLING_PAYMENT = "Billing/Payment Issue"
+    SERVICE_OUTAGE = "Service Outage/Technical Bug"
+    GENERAL_INQUIRY = "General Inquiry/Feedback"
 
 class IntentClassificationResult(BaseModel):
     predicted_intent: IntentCategory = Field(description="Most suitable category for customer query.")
@@ -23,23 +23,11 @@ class IntentClassificationResult(BaseModel):
     reasoning: str = Field(description="Brief justification for chosen intent.")
 
 class IntentClassifier:
-    def __init__(self, generator_pipeline=None, model_id: str = "Qwen/Qwen2.5-1.5B-Instruct"):
-        if generator_pipeline is not None:
-            self.pipe = generator_pipeline
+    def __init__(self, llm_client: LLMClient = None, generator_pipeline=None):
+        if llm_client is not None:
+            self.llm = llm_client
         else:
-            if torch.cuda.is_available():
-                device_map = "auto"
-                torch_dtype = torch.float16
-            else:
-                device_map = None
-                torch_dtype = torch.float32
-
-            self.pipe = pipeline(
-                "text-generation",
-                model=model_id,
-                torch_dtype=torch_dtype,
-                device_map=device_map
-            )
+            self.llm = LLMClient.get_shared_client()
 
     def classify(self, customer_message: str) -> IntentClassificationResult:
         categories = [e.value for e in IntentCategory]
@@ -58,19 +46,7 @@ class IntentClassifier:
             {"role": "user", "content": f"Customer Message: '{customer_message}'"}
         ]
 
-        prompt = self.pipe.tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
-
-        outputs = self.pipe(
-            prompt,
-            max_new_tokens=150,
-            do_sample=False,
-            return_full_text=False,
-            clean_up_tokenization_spaces=False
-        )
-
-        raw_text = outputs[0]["generated_text"].strip()
+        raw_text = self.llm.chat_completion(messages, max_tokens=150, temperature=0.0, json_mode=True)
 
         if "```json" in raw_text:
             raw_text = raw_text.split("```json")[1].split("```")[0].strip()

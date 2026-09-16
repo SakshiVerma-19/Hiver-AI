@@ -3,11 +3,10 @@ import os
 import re
 import json
 from pydantic import BaseModel
-from transformers import pipeline
-import torch
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from src.llm import LLMClient
 from src.intent import IntentClassifier
 from src.rag import RAGRetriever
 
@@ -21,26 +20,14 @@ class ExecutionResult(BaseModel):
     final_response: str
 
 class SupportAgent:
-    def __init__(self, model_id: str = "Qwen/Qwen2.5-1.5B-Instruct"):
+    def __init__(self, llm_client: LLMClient = None):
         print("Initializing Support Agent Pipeline...")
         
-        # 1. Initialize Single Model Pipeline
-        if torch.cuda.is_available():
-            device_map = "auto"
-            torch_dtype = torch.float16
-        else:
-            device_map = None
-            torch_dtype = torch.float32
+        # 1. Initialize LLM Client (Groq or local fallback)
+        self.llm = llm_client or LLMClient.get_shared_client()
 
-        self.generator = pipeline(
-            "text-generation",
-            model=model_id,
-            torch_dtype=torch_dtype,
-            device_map=device_map
-        )
-
-        # Pass generator to IntentClassifier to share weights
-        self.intent_classifier = IntentClassifier(generator_pipeline=self.generator)
+        # Pass LLM Client to IntentClassifier
+        self.intent_classifier = IntentClassifier(llm_client=self.llm)
         
         # 2. RAG Retriever (resolve paths relative to project root)
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -52,14 +39,18 @@ class SupportAgent:
 
         # 3. Guardrails
         self.pii_patterns = [
-            r'\b(?:\d[ -]*?){13,16}\b',  # Credit Cards
-            r'\b\d{3}-\d{2}-\d{4}\b'      # SSN
+            r'\b(?:\d[ -]*?){13,16}\b',                                            # Credit Cards
+            r'\b\d{3}-\d{2}-\d{4}\b',                                                # SSN
+            r'\b(password|passcode|secret|api[-_ ]?key)\s*[:=]?\s*\S+\b'           # Credential Exposure
         ]
         self.legal_patterns = [
-            r'\b(lawyer|lawsuit|sue|legal action|attorney)\b'
+            r'\b(lawyer|lawsuit|sue|legal action|attorney|court|litigation|arbitration)\b'
+        ]
+        self.sentiment_patterns = [
+            r'\b(scam|fraudulent|fraud|thieves|cheaters|disgusting|horrible|worst service)\b'
         ]
 
-    def _check_escalation(self, text: str, confidence_score: float) -> tuple[bool, str | None]:
+    def _check_escalation(self, text: str, confidence_score: float, predicted_intent: str | None = None) -> tuple[bool, str | None]:
         for pattern in self.pii_patterns:
             if re.search(pattern, text, re.IGNORECASE):
                 return True, "PII_EXPOSURE_RISK"
@@ -68,8 +59,19 @@ class SupportAgent:
             if re.search(pattern, text, re.IGNORECASE):
                 return True, "LEGAL_RISK_DETECTED"
 
+        # Sentiment Velocity Check: Extreme negative sentiment or hostility
+        for pattern in self.sentiment_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                return True, "HIGH_NEGATIVE_SENTIMENT"
+
         if confidence_score < 0.65:
             return True, "LOW_INTENT_CONFIDENCE"
+
+        # Context Trigger: Missing required order/tracking number for tracking status requests
+        if predicted_intent == "Order/Tracking Status":
+            has_order_id = bool(re.search(r'(#\s*[\w-]+|\bTRK[\w\d]+\b|\b\d{3}-\d{7}-\d{7}\b|\b\d{7,14}\b)', text, re.IGNORECASE))
+            if not has_order_id and any(kw in text.lower() for kw in ["where", "package", "status", "delivery", "track", "lost"]):
+                return True, "MISSING_ORDER_ID"
 
         return False, None
 
@@ -77,7 +79,7 @@ class SupportAgent:
         intent_res = self.intent_classifier.classify(customer_message)
 
         should_escalate, reason_code = self._check_escalation(
-            customer_message, intent_res.confidence_score
+            customer_message, intent_res.confidence_score, intent_res.predicted_intent.value
         )
 
         if should_escalate:
@@ -91,7 +93,7 @@ class SupportAgent:
                 final_response=f"Ticket escalated to human queue. Reason: {reason_code}"
             )
 
-        contexts = self.rag_retriever.retrieve_context(customer_message, top_k=2)
+        contexts = self.rag_retriever.retrieve_context(customer_message, intent=intent_res.predicted_intent.value, top_k=3)
         
         context_str = ""
         for i, ctx in enumerate(contexts, 1):
@@ -112,19 +114,7 @@ class SupportAgent:
             {"role": "user", "content": customer_message}
         ]
 
-        formatted_prompt = self.generator.tokenizer.apply_chat_template(
-            prompt_messages, tokenize=False, add_generation_prompt=True
-        )
-
-        outputs = self.generator(
-            formatted_prompt,
-            max_new_tokens=120,
-            do_sample=False,
-            return_full_text=False,
-            clean_up_tokenization_spaces=False
-        )
-
-        raw_response = outputs[0]["generated_text"].strip()
+        raw_response = self.llm.chat_completion(prompt_messages, max_tokens=120, temperature=0.0)
 
         if len(raw_response) > 280:
             raw_response = raw_response[:277] + "..."
@@ -142,7 +132,7 @@ class SupportAgent:
 if __name__ == "__main__":
     agent = SupportAgent()
     sample_queries = [
-        "My order has been delayed for 3 days, can you please help check tracking?",
+        "My order #102-3948571 has been delayed for 3 days, can you please help check tracking?",
         "I was charged twice on my credit card 4111-2222-3333-4444! Fix this!",
         "Fix this now or I will contact my lawyer and sue you!"
     ]
