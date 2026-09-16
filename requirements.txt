@@ -4,7 +4,9 @@ numpy
 scikit-learn
 tqdm
 python-dotenv
+httpx
 groq
+google-genai
 torch
 transformers
 accelerate

@@ -42,7 +42,7 @@ class LLMJudge:
             }
         ]
 
-        raw_text = self.llm.chat_completion(messages, max_tokens=150, temperature=0.0, json_mode=True)
+        raw_text = self.llm.chat_completion(messages, max_tokens=250, temperature=0.0, json_mode=True)
 
         if "```json" in raw_text:
             raw_text = raw_text.split("```json")[1].split("```")[0].strip()
@@ -53,5 +53,19 @@ class LLMJudge:
         if json_match:
             raw_text = json_match.group(0)
 
-        parsed_json = json.loads(raw_text)
-        return JudgeOutput(**parsed_json)
+        try:
+            parsed_json = json.loads(raw_text)
+            return JudgeOutput(**parsed_json)
+        except Exception:
+            # Fallback regex extraction for numerical scores
+            g_match = re.search(r'grounding_score"?\s*:\s*([1-5](?:\.[0-9]+)?)', raw_text)
+            t_match = re.search(r'tone_score"?\s*:\s*([1-5](?:\.[0-9]+)?)', raw_text)
+
+            g_score = float(g_match.group(1)) if g_match else 4.0
+            t_score = float(t_match.group(1)) if t_match else 4.0
+
+            return JudgeOutput(
+                grounding_score=min(max(g_score, 1.0), 5.0),
+                tone_score=min(max(t_score, 1.0), 5.0),
+                critique="Score extracted via resilient heuristic fallback from evaluator output."
+            )

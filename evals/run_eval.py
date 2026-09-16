@@ -146,7 +146,7 @@ def run_benchmark(samples_limit: int = None):
         golden_set = golden_set[:samples_limit]
 
     print("=" * 75)
-    print(f"🤖 HIVER AI SUPPORT AGENT - MULTI-BASELINE BENCHMARK (N={len(golden_set)})")
+    print(f"[HIVER AI] SUPPORT AGENT - MULTI-BASELINE BENCHMARK (N={len(golden_set)})")
     print("=" * 75)
 
     # 1. Initialize Shared LLM Client
@@ -180,17 +180,17 @@ def run_benchmark(samples_limit: int = None):
     print(f"{'Tone Alignment (1.0-5.0)':<35} | {str(res_trivial['tone_score']):<20} | {str(res_simple['tone_score']):<20} | {str(res_prod['tone_score']):<20}")
     print(f"{'Escalation Precision':<35} | {str(res_trivial['escalation_precision']):<20} | {str(res_simple['escalation_precision']):<20} | {str(res_prod['escalation_precision']):<20}")
     print(f"{'Escalation Recall':<35} | {str(res_trivial['escalation_recall']):<20} | {str(res_simple['escalation_recall']):<20} | {str(res_prod['escalation_recall']):<20}")
-    print(f"{'Human vs. Judge Alignment (κ)':<35} | {str(res_trivial['judge_kappa']):<20} | {str(res_simple['judge_kappa']):<20} | {str(res_prod['judge_kappa']):<20}")
+    print(f"{'Human vs. Judge Alignment (kappa)':<35} | {str(res_trivial['judge_kappa']):<20} | {str(res_simple['judge_kappa']):<20} | {str(res_prod['judge_kappa']):<20}")
     print("=" * 85)
 
     print("\n[Markdown Table for README.md & report.md]:")
     print("| Metric | Baseline 1: Trivial (Majority Intent + Canned) | Baseline 2: Simple (Zero-Shot No-RAG) | Production Pipeline (RAG + Guardrails + Structured Intent) |")
     print("| :--- | :--- | :--- | :--- |")
     print(f"| **Intent F1-Score (Weighted)** | {res_trivial['intent_f1']} | {res_simple['intent_f1']} | {res_prod['intent_f1']} |")
-    print(f"| **Grounding Score (1.0–5.0)** | {res_trivial['grounding_score']} | {res_simple['grounding_score']} | {res_prod['grounding_score']} |")
-    print(f"| **Tone Alignment (1.0–5.0)** | {res_trivial['tone_score']} | {res_simple['tone_score']} | {res_prod['tone_score']} |")
+    print(f"| **Grounding Score (1.0-5.0)** | {res_trivial['grounding_score']} | {res_simple['grounding_score']} | {res_prod['grounding_score']} |")
+    print(f"| **Tone Alignment (1.0-5.0)** | {res_trivial['tone_score']} | {res_simple['tone_score']} | {res_prod['tone_score']} |")
     print(f"| **Escalation Precision** | {res_trivial['escalation_precision']} | {res_simple['escalation_precision']} | {res_prod['escalation_precision']} |")
-    print(f"| **Human vs. Judge Alignment ($\kappa$)** | {res_trivial['judge_kappa']} | {res_simple['judge_kappa']} | {res_prod['judge_kappa']} |")
+    print(rf"| **Human vs. Judge Alignment (kappa)** | {res_trivial['judge_kappa']} | {res_simple['judge_kappa']} | {res_prod['judge_kappa']} |")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Hiver Support Agent Benchmarks")

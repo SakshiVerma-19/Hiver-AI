@@ -65,18 +65,18 @@ def print_calibration_report(human_grounding: list[int], judge_grounding: list[i
     
     g_metrics = calculate_calibration_metrics(human_grounding, judge_grounding)
     print(f"\n[Grounding Score Alignment] (N = {len(human_grounding)})")
-    print(f"  • Cohen's Kappa (κ) : {g_metrics['cohen_kappa']:.2f} ({g_metrics['interpretation']})")
-    print(f"  • Pearson Correlation: {g_metrics['pearson_r']:.2f}")
-    print(f"  • Mean Absolute Error: {g_metrics['mae']:.2f} points")
-    print(f"  • Exact Score Match  : {g_metrics['exact_accuracy']:.1f}%")
+    print(f"  - Cohen's Kappa      : {g_metrics['cohen_kappa']:.2f} ({g_metrics['interpretation']})")
+    print(f"  - Pearson Correlation: {g_metrics['pearson_r']:.2f}")
+    print(f"  - Mean Absolute Error: {g_metrics['mae']:.2f} points")
+    print(f"  - Exact Score Match  : {g_metrics['exact_accuracy']:.1f}%")
 
     if human_tone and judge_tone:
         t_metrics = calculate_calibration_metrics(human_tone, judge_tone)
         print(f"\n[Tone & Constraint Alignment] (N = {len(human_tone)})")
-        print(f"  • Cohen's Kappa (κ) : {t_metrics['cohen_kappa']:.2f} ({t_metrics['interpretation']})")
-        print(f"  • Pearson Correlation: {t_metrics['pearson_r']:.2f}")
-        print(f"  • Mean Absolute Error: {t_metrics['mae']:.2f} points")
-        print(f"  • Exact Score Match  : {t_metrics['exact_accuracy']:.1f}%")
+        print(f"  - Cohen's Kappa      : {t_metrics['cohen_kappa']:.2f} ({t_metrics['interpretation']})")
+        print(f"  - Pearson Correlation: {t_metrics['pearson_r']:.2f}")
+        print(f"  - Mean Absolute Error: {t_metrics['mae']:.2f} points")
+        print(f"  - Exact Score Match  : {t_metrics['exact_accuracy']:.1f}%")
     print("=" * 60 + "\n")
 
 if __name__ == "__main__":

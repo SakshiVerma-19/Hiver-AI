@@ -105,15 +105,42 @@ An automated grading harness measuring model outputs across key metrics:
 
 ## Evaluation Benchmark & Baseline Comparisons
 
-The pipeline is benchmarked against two baseline systems over the **200-sample hand-labeled Golden Set** (`data/golden_set.json`):
+The pipeline was benchmarked against two baseline systems over the **150-sample hand-labeled Golden Set** (`data/golden_set.json`) using OpenRouter (`meta-llama/llama-3.1-8b-instruct`):
 
 | Metric | Baseline 1: Trivial (Majority Intent + Canned Reply) | Baseline 2: Simple (Zero-Shot No-RAG Prompt) | Production Pipeline (RAG + Guardrails + Structured Intent) |
 | :--- | :---: | :---: | :---: |
-| **Intent F1-Score (Weighted)** | 0.24 | 0.74 | **0.89** |
-| **Grounding Score (1.0–5.0)** | N/A | 2.3 | **4.6** |
-| **Tone Alignment (1.0–5.0)** | 3.0 | 4.1 | **4.8** |
-| **Escalation Precision** | 0.00 (Auto-handles all) | 0.58 (Regex only) | **0.93** (Dual-Trigger System) |
-| **Human vs. Judge Alignment ($\kappa$)** | N/A | 0.42 (Uncalibrated) | **0.78** (Calibrated Rubric) |
+| **Intent F1-Score (Weighted)** | 0.08 | 0.77 | **0.48** |
+| **Grounding Score (1.0-5.0)** | N/A | 2.3 | **2.3** |
+| **Tone Alignment (1.0-5.0)** | 3.0 | 4.5 | **4.5** |
+| **Escalation Precision** | 0.00 (Auto-handles all) | 1.00 (Naive regex) | **0.60** (Dual-Trigger System) |
+| **Escalation Recall** | 0.00 (100% leak rate) | 0.47 (Misses 53% of risks) | **0.80** (Catches 80% of all risks) |
+| **Human vs. Judge Alignment ($\kappa$)** | N/A | 0.01 | **0.00** |
+
+### Confusion Matrix Insights ($N=150$)
+
+#### 1. Escalation Guardrail (2x2)
+```text
+                      Predicted: Safe (Auto)   Predicted: Escalate
+Actual: Safe (Auto)           127 (TN)                   8 (FP - False Alarm)
+Actual: Risk (Escalate)         3 (FN - Leak!)          12 (TP)
+```
+* **High Safety Recall (80%)**: The production system caught 12 out of 15 true safety risks (PII leaks, legal exposure, missing order IDs), cutting leaks from 53% on the simple baseline down to only 20%.
+* **Low False-Alarm Overhead**: Out of 135 safe tickets, only 8 (5.9%) were escalated prematurely.
+
+#### 2. Intent Classification (6x6)
+```text
+Legend: OT=Order/Tracking | CR=Cancel/Refund | AA=Account Auth
+        BP=Billing/Pay   | SO=Service Outage | GI=General Inq
+
+True \ Pred  |   OT    CR    AA    BP    SO    GI
+--------------------------------------------------
+OT          |   34     0     0     0     0     0
+CR          |   26     7     0     0     0     0
+AA          |   13     0    13     1     6     0
+BP          |   20     2     1    10     0     0
+SO          |    6     0     0     0    11     0
+GI          |    0     0     0     0     0     0
+```
 
 ---
 
