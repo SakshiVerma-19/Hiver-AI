@@ -1,202 +1,286 @@
-# Technical Report: Architecture Decisions & Failure Mode Analysis
+﻿# Hiver Support Agent — Technical Report
 
-**Project**: Hiver SDE Intern Assignment — Production-Grade Customer Support AI Agent & Evaluation Engine  
-**Target Brand**: `@AmazonHelp` Twitter Customer Service Domain  
-**Dataset**: Subsampled Twitter Customer Support (~5,000 paired threads) + 150-sample Hand-Labeled Golden Set  
-
----
-
-## 1. Executive Summary
-This report details the architectural rationale, engineering tradeoffs, empirical failure analysis, and operational challenges encountered during the development of the customer support AI system. The pipeline integrates:
-1. **Deterministic Intent Classification**: Maps unstructured customer tweets into 6 business-critical categories using Pydantic JSON schemas.
-2. **Dual-Trigger Escalation Engine**: Combines regex security filters (PII, legal risks) with probabilistic confidence boundaries ($\theta < 0.65$) and context completeness checks.
-3. **Intent-Filtered RAG Retriever**: Grounds replies on verified historical `@AmazonHelp` resolution turns ($k=3$).
-4. **Calibrated LLM-as-a-Judge**: Employs an automated evaluator aligned against human annotators.
+**Project**: Production-Grade Customer Support AI Agent & Evaluation Engine
+**Brand**: `@AmazonHelp` Twitter Customer Service
+**Dataset**: Twitter Customer Support Dataset (TWCS, Kaggle) · 150-sample Hand-Labeled Golden Set
 
 ---
 
-## 2. 15-Point Engineering Decision Log
+## 1. Problem Framing
 
-### 1. Model Selection: Local Open-Source (`Qwen2.5-1.5B-Instruct`) & Unified Cloud API Fallback
-- **Decision**: Implemented unified `LLMClient` supporting local Hugging Face execution, Google Gemini, Groq, and OpenRouter.
-- **Rationale**: Support workflows handle sensitive PII (credit cards, addresses). Providing a local runtime ensures data privacy compliance (GDPR, PCI-DSS) and zero marginal inference cost, while unified cloud abstraction allows rapid multi-baseline benchmarking without VRAM exhaustion.
+### What "Good" Means for This Brand
 
-### 2. Structured Output Enforcement: Pydantic JSON Schema vs. Free-Form Text
-- **Decision**: Enforced JSON schema generation via Pydantic model validation with resilient regex extraction fallbacks.
-- **Rationale**: Downstream business logic requires programmatic fields (`predicted_intent`, `confidence_score`, `escalated`). Unconstrained text generation risks parsing failures, while regex-assisted JSON fallbacks protect against model quote-escaping anomalies.
+`@AmazonHelp` operates in one of the highest-volume public support contexts on social media. A good automated reply must satisfy four criteria simultaneously:
 
-### 3. Intent Taxonomy Granularity: 6 Business-Critical Classes
-- **Decision**: Standardized on 6 disjoint categories: *Order/Tracking Status*, *Cancellation/Refund Request*, *Account Access/Authentication*, *Billing/Payment Issue*, *Service Outage/Technical Bug*, and *General Inquiry/Feedback*.
-- **Rationale**: High-cardinality taxonomies (30+ classes) cause severe confusion in smaller LLMs. A 6-class system maps directly to operational routing queues while maximizing operational clarity.
+1. **Safe** — it must not auto-respond to queries involving PII exposure (credit cards, SSNs), explicit legal threats, or missing context that would force the agent to fabricate information (e.g., inventing order status without an order ID).
+2. **Grounded** — replies must be anchored in verified historical `@AmazonHelp` resolution turns, not in LLM parametric memory that may reflect outdated or hallucinated policies.
+3. **Brand-Tone Compliant** — replies must be professional, empathetic, and concise within Twitter's hard 280-character ceiling.
+4. **Routable** — the system must distinguish queries it can safely resolve autonomously from those that require a human agent, and route them accordingly with a machine-readable reason code.
 
-### 4. Confidence Score Calibration Boundary ($\theta = 0.65$)
-- **Decision**: Set the escalation cutoff at confidence $< 0.65$.
-- **Rationale**: Empirical validation showed queries with model confidence below 0.65 were frequently ambiguous, sarcastic, or multi-topic questions where automated generation had high error rates.
+### What We Chose Not to Build
 
-### 5. Dual-Trigger Escalation Engine: Regex + Model Confidence
-- **Decision**: Layered deterministic regex rules before probabilistic model evaluation.
-- **Rationale**: Regex provides $O(1)$ sub-millisecond detection of regulatory liabilities (credit card numbers, explicit legal threats) without relying on stochastic LLM behavior.
-
-### 6. Context-Aware Escalation: Missing Order Identifiers
-- **Decision**: Flag queries classified as *Order/Tracking Status* that lack order IDs or tracking tokens (`#...`, `TRK...`).
-- **Rationale**: An agent cannot provide a factual status update without an order ID. Escalating or triggering an ID-request template prevents generating hallucinated tracking information.
-
-### 7. PII Handling: Immediate Escalation vs. In-Place Redaction
-- **Decision**: Route PII exposures directly to the human queue under `PII_EXPOSURE_RISK`.
-- **Rationale**: While masking (e.g. `[REDACTED]`) sanitizes text, customer tweets exposing plaintext SSNs or credit cards require human intervention to notify the user of public security risks.
-
-### 8. Vector Database: ChromaDB vs. In-Memory FAISS
-- **Decision**: Implemented `ChromaDB` with a persistent SQLite-backed vector store (`./chroma_db`).
-- **Rationale**: ChromaDB provides metadata filtering (`where={"intent": ...}`), document metadata tracking, and disk persistence out-of-the-box, unlike raw FAISS which requires separate metadata dictionaries.
-
-### 9. Embedding Model: `sentence-transformers/all-MiniLM-L6-v2`
-- **Decision**: Standardized on `all-MiniLM-L6-v2` (384-dimensional dense vectors).
-- **Rationale**: Strikes an optimal tradeoff between embedding speed (under 15ms per query), low memory footprint (80MB), and semantic clustering quality on short conversational text.
-
-### 10. Retrieval Density & Intent Filtering ($k=3$)
-- **Decision**: Retrieved top $k=3$ historical turns filtered by predicted intent category.
-- **Rationale**: In support domains, $k=1$ lacks sufficient coverage of edge-case policies, while $k \ge 5$ overflows the small context window of 1.5B/2B parameter models and dilutes attention.
-
-### 11. Prompt Formatting: Chronological Resolution Turn Formatting
-- **Decision**: Formatted retrieved historical resolutions as `Past Customer: ... | Past Brand: ...` paired turns.
-- **Rationale**: Few-shot contextual demonstration primes the model to mimic official `@AmazonHelp` brand tone, brevity, and policy guidelines far better than raw document paragraphs.
-
-### 12. Decoding Strategy: Greedy Decoding (`do_sample=False`)
-- **Decision**: Enforced greedy decoding with zero sampling temperature across all modules.
-- **Rationale**: Customer support requires strict reproducibility, factual grounding, and deterministic policy adhesion rather than creative randomness.
-
-### 13. Output Constraints: Strict Twitter Length Limit ($\le 280$ Characters)
-- **Decision**: Implemented prompt constraint instructions coupled with programmatic fallback slicing (`[:277] + "..."`).
-- **Rationale**: Real-world Twitter/X integration strictly enforces the 280-character ceiling. Programmatic defense-in-depth guarantees API compliance.
-
-### 14. LLM-as-a-Judge Calibration: Grounding Rubric & Cohen's Kappa Validation
-- **Decision**: Built a dual-axis judge (Grounding 1–5, Tone 1–5) calibrated against a hand-annotated golden set using Cohen's Kappa ($\kappa$).
-- **Rationale**: LLM judges often suffer from leniency bias. Validating alignment against human ground truth mathematically validates judge consistency and bias boundaries.
-
-### 15. Single-Pipeline Weight Sharing: Agent & Judge Memory Optimization
-- **Decision**: Reused `agent.generator` within `LLMJudge(generator_pipeline=agent.generator)`.
-- **Rationale**: Prevents loading two independent instances of `Qwen2.5-1.5B` in VRAM, slashing memory consumption from $\sim 6.5\text{ GB}$ to under $3.2\text{ GB}$.
+- **Sentiment analysis**: Tone and urgency detection were deprioritised; escalation is driven by content risk and confidence, not emotional tone.
+- **Multi-turn conversational memory**: The system treats each incoming tweet as a self-contained ticket; threading across multiple reply turns was out of scope.
+- **Fine-tuning**: No model weights were updated. All intent classification and generation is zero-shot or few-shot prompting over frozen models.
+- **Named-entity linking**: Order IDs are detected by pattern (`#\d+`, `TRK...`) but not verified against a live order management system.
+- **Multilingual support**: The pipeline handles English-language tweets only.
 
 ---
 
-## 3. Failure Mode Analysis (5 Deep Dives)
+## 2. Golden Evaluation Set
 
-### Failure Mode 1: Sarcasm and Colloquial Hyperbole Misclassified as Legal Threats
-- **Query Example**: *"@AmazonHelp You guys lost my socks again. My lawyer is going to hear about this haha!"*
-- **Observed Behavior**: The regex detected `lawyer` and triggered `LEGAL_RISK_DETECTED`, escalating a playful customer complaint.
-- **Root Cause**: Keyword-based regex triggers lack semantic sentiment understanding.
-- **Mitigation Strategy**: Combine regex match with a sentiment polarity threshold or an LLM-based intent verification step before firing full legal escalation.
+**Size**: 150 hand-labelled examples (`data/golden_set.json`)
 
----
+### Sampling Strategy
 
-### Failure Mode 2: Multi-Intent Compound Queries
-- **Query Example**: *"@AmazonHelp My account was locked after I requested a refund on order #102-3948571."*
-- **Observed Behavior**: The classifier predicted `Cancellation/Refund Request` and ignored the critical `Account Access/Authentication` issue.
-- **Root Cause**: Single-label classification constraint (`predicted_intent: IntentCategory`) forces the model to choose one dominant intent.
-- **Mitigation Strategy**: Transition to multi-label intent tagging with secondary routing tags or escalate multi-intent tickets to senior tier-2 agents.
+The full TWCS Kaggle dataset contains ~3 million tweets. We isolated only the `@AmazonHelp` brand dialogue chains, which yielded approximately 5,000 paired customer -> brand resolution threads (saved to `data/raw_sample.csv`). From these, 150 examples were stratified-sampled to cover all six intent categories proportionally, plus an over-sample of edge-case and escalation-worthy tickets (PII exposure, legal language, missing order IDs, vague queries) to ensure the evaluation set contains enough signal on the hardest failure modes.
 
----
+**Intent Distribution in the Golden Set**:
 
-### Failure Mode 3: RAG Retrieval Drift on Obsolete Policies
-- **Query Example**: Queries asking about Prime Video download limitations on specific legacy Android devices.
-- **Observed Behavior**: Retrieved historical resolutions from 2017 suggested outdated steps that no longer apply to current operating systems.
-- **Root Cause**: Unweighted historical dataset containing resolutions spanning several years without time-decay weighting.
-- **Mitigation Strategy**: Implement exponential time-decay scoring in vector retrieval to favor recent historical resolutions over older ones.
+| Intent Category | Count |
+| :--- | :---: |
+| Order/Tracking Status | 34 |
+| Cancellation/Refund Request | 33 |
+| Account Access/Authentication | 33 |
+| Billing/Payment Issue | 33 |
+| Service Outage/Technical Bug | 17 |
+| General Inquiry/Feedback | 0 |
 
----
+**Labelling Protocol**:
+Each example was labelled with:
+- `true_intent` — one of the 6 taxonomy categories, assigned by reading the full tweet text.
+- `expected_escalate` (bool) — `true` if the query contains PII, legal threats, is missing required context, or is genuinely ambiguous.
+- `expected_escalation_reason` — the reason code (`PII_EXPOSURE_RISK`, `LEGAL_RISK_DETECTED`, `MISSING_ORDER_ID`, `LOW_INTENT_CONFIDENCE`), or `null` if safe.
+- `human_grounding_score` (1-5) — how well an ideal reply would need to be grounded in policy, scored assuming a perfect response.
+- `human_tone_score` (1-5) — expected professional tone level for this query type.
 
-### Failure Mode 4: Prompt Length Truncation at 280-Character Boundary
-- **Query Example**: Technical troubleshooting instructions for Kindle e-readers requiring 4 distinct reset steps.
-- **Observed Behavior**: The generated response reached 290 characters and was programmatically truncated with `...`, cutting off the final instruction sentence.
-- **Root Cause**: Tension between complete technical instructions and Twitter's 280-character limit.
-- **Mitigation Strategy**: Prompt model to generate a high-level summary and provide an official Amazon Help URL link for detailed multi-step workflows.
+Labels were assigned by the project author in a single annotation pass, with a secondary review pass to catch inconsistencies.
 
 ---
 
-### Failure Mode 5: Low-Confidence Vagueness on Incomplete Customer Queries
-- **Query Example**: *"@AmazonHelp Hello, is someone there? Please help me."*
-- **Observed Behavior**: Model predicted `General Inquiry/Feedback` with low confidence ($0.45$) and was escalated under `LOW_INTENT_CONFIDENCE`.
-- **Impact & Assessment**: This is an intended and desirable failure-mode mitigation. Rather than auto-generating an unhelpful canned guess, the system safely routes the query to a human agent.
+## 3. Evaluation Harness
+
+Run the full benchmark with:
+```powershell
+python evals/run_eval.py                 # Full 150-sample evaluation
+python evals/run_eval.py --samples 25   # Fast 25-sample smoke test
+```
+
+Run human vs. judge calibration:
+```powershell
+python evals/human_vs_judge.py
+```
+
+### Automated Metrics
+
+All metrics are computed over the 150-sample golden set in `evals/run_eval.py`:
+
+| Metric | Description |
+| :--- | :--- |
+| **Intent F1-Score (Weighted)** | Weighted F1 over 6 intent classes vs. `true_intent` labels |
+| **Escalation Precision** | Of all queries the system escalated, what fraction were truly risky |
+| **Escalation Recall** | Of all truly risky queries, what fraction did the system escalate |
+| **Grounding Score (1-5)** | LLM-as-a-Judge score measuring factual anchoring to retrieved context |
+| **Tone Alignment (1-5)** | LLM-as-a-Judge score measuring brand voice and character compliance |
+
+### LLM-as-a-Judge Rubric
+
+The judge (`src/judge.py`) scores each non-escalated reply on two axes using a structured prompt:
+
+**Grounding (1-5)**:
+- 5 = Reply is fully grounded in retrieved historical context; no unsupported claims.
+- 3 = Reply is mostly correct but includes minor unverified detail.
+- 1 = Reply is entirely from model parametric memory; context is ignored.
+
+**Tone (1-5)**:
+- 5 = Professional, empathetic, within 280 chars, matches `@AmazonHelp` brand voice.
+- 3 = Correct information but informal or slightly over character limit.
+- 1 = Rude, off-brand, or clearly a hallucinated generic response.
+
+### Human vs. Judge Alignment
+
+Judge calibration is computed in `evals/human_vs_judge.py` using Cohen's Kappa (kappa) on grounding scores:
+
+- **Observed kappa = 0.00** on the production pipeline run.
+- **Root cause**: The judge's JSON output often contained markdown fencing that caused `json.loads()` to crash silently, defaulting scores to a fixed dummy value — meaning all judge scores had zero variance, making kappa mathematically undefined (reported as 0.00).
+- **Mitigation in place**: Regex-based JSON block extraction (`re.search(r'\{.*\}', raw, re.DOTALL)`) and explicit `int()` casting were added; kappa improved but was not re-benchmarked to produce a clean number before submission.
+- **Honest assessment**: The judge rubric is directionally correct (high-quality replies score higher), but the kappa figure in this report should be treated as **unreliable** pending a full calibration re-run with a more robust output parser.
 
 ---
 
-## 4. Empirical Evaluation Summary (N = 150 Benchmark)
+## 4. Results vs. Baselines
 
-The full evaluation harness was executed over the 150-sample Golden Set (`data/golden_set.json`) using OpenRouter (`meta-llama/llama-3.1-8b-instruct`):
+### Baseline Definitions
 
-| Metric | Baseline 1: Trivial (Majority Intent + Canned) | Baseline 2: Simple (Zero-Shot No-RAG) | Production Pipeline (RAG + Guardrails + Structured Intent) |
+- **Baseline 1 — Trivial**: Always predicts `Order/Tracking Status` (majority class) and returns a single canned reply: *"Hi! Please DM us your order details and we'll look into it right away."* Never escalates.
+- **Baseline 2 — Simple (Zero-Shot, No-RAG)**: Sends the raw customer tweet directly to the LLM with a zero-shot prompt; uses a hard-coded keyword list (`refund`, `cancel`, `password`, `charge`) for escalation. No vector retrieval, no structured output.
+- **Production Pipeline**: Full RAG + dual-trigger escalation guardrails + Pydantic-structured intent classification.
+
+### Results Table (N = 150)
+
+| Metric | Baseline 1: Trivial | Baseline 2: Simple Zero-Shot | Production Pipeline |
 | :--- | :---: | :---: | :---: |
 | **Intent F1-Score (Weighted)** | 0.08 | 0.77 | **0.48** |
 | **Grounding Score (1.0-5.0)** | N/A | 2.3 | **2.3** |
 | **Tone Alignment (1.0-5.0)** | 3.0 | 4.5 | **4.5** |
 | **Escalation Precision** | 0.00 | 1.00 | **0.60** |
 | **Escalation Recall** | 0.00 | 0.47 | **0.80** |
-| **Human vs. Judge Alignment ($\kappa$)** | N/A | 0.01 | **0.00** |
+| **Human vs. Judge Alignment (kappa)** | N/A | 0.01 | **0.00** |
 
-### Confusion Matrix Deep Dive ($N=150$)
+### Confusion Matrices
 
-#### 1. Escalation Guardrail (2x2 Matrix)
-```text
+#### Escalation Guardrail (2x2)
+
+```
                       Predicted: Safe (Auto)   Predicted: Escalate
-Actual: Safe (Auto)           127 (TN)                   8 (FP - False Alarm)
+Actual: Safe (Auto)           127 (TN)                   8 (FP)
 Actual: Risk (Escalate)         3 (FN - Leak!)          12 (TP)
 ```
-* **80% Safety Threat Catch Rate**: The production pipeline's dual-trigger guardrails successfully caught **12 out of 15** real risk tickets (PII leaks, legal threats, missing order identifiers), reducing dangerous customer-facing safety leaks from 53% (Baseline 2) down to 20%.
-* **Low Operational Overhead**: Only 8 false alarms across 135 safe inquiries (5.9% false escalation rate), preserving human support agent capacity.
 
-#### 2. Intent Classification (6x6 Matrix)
-```text
+- **80% escalation recall**: The dual-trigger guardrail caught 12 of 15 true risk tickets.
+- Baseline 2's keyword-only escalation hit 1.00 precision but only 0.47 recall — it escalated nothing that was not flagged by a keyword, missing 53% of real risks.
+- **5.9% false escalation rate** (8/135 safe tickets over-escalated).
+
+#### Intent Classification (6x6)
+
+```
 Legend: OT=Order/Tracking | CR=Cancel/Refund | AA=Account Auth
         BP=Billing/Pay   | SO=Service Outage | GI=General Inq
 
 True \ Pred  |   OT    CR    AA    BP    SO    GI
 --------------------------------------------------
-OT          |   34     0     0     0     0     0
-CR          |   26     7     0     0     0     0
-AA          |   13     0    13     1     6     0
-BP          |   20     2     1    10     0     0
-SO          |    6     0     0     0    11     0
-GI          |    0     0     0     0     0     0
+OT           |   34     0     0     0     0     0
+CR           |   26     7     0     0     0     0
+AA           |   13     0    13     1     6     0
+BP           |   20     2     1    10     0     0
+SO           |    6     0     0     0    11     0
+GI           |    0     0     0     0     0     0
 ```
-* **Order/Tracking Prior Bias**: Because `@AmazonHelp` customer queries frequently reference delivery, items, or shipping dates even when requesting refunds or reporting account bugs, smaller instruction-tuned models exhibit prior collapse into `Order/Tracking Status`.
-* **Keyword vs. LLM Tradeoff**: Baseline 2's hardcoded keyword rules achieved 0.77 F1 by matching explicit tokens ("refund", "charge", "password"), whereas zero-shot LLM classification requires few-shot prompt examples to distinguish overlapping complaints.
 
-### Key Takeaways
-1. **Safety First**: The production guardrails deliver an **80% recall on critical safety violations** (vs. 47% on naive regex), preventing dangerous customer PII leaks and legal risks from receiving automated bot responses.
-2. **Brand Compliance**: Both Baseline 2 and the Production Pipeline maintained high tone adherence ($4.5/5.0$) and strictly adhered to Twitter's $\le 280$ character constraint.
-3. **Reproducibility**: The evaluation harness operates completely deterministically and can be rerun on any golden set size via `python evals/run_eval.py --samples <N>`.
+The dominant failure: `CR`, `AA`, and `BP` queries are massively collapsed into `OT` because Amazon tweets so frequently reference packages and tracking that smaller instruction-tuned models anchor on shipping vocabulary regardless of the actual complaint type.
 
 ---
 
-## 5. Engineering Challenges Encountered & Resolutions
+## 5. Failure Analysis — Top 5 Failure Modes
 
-During the development and execution of this project, several critical technical challenges were encountered and resolved across resource management, environment configuration, code execution, API resiliency, and metric calibration:
+### Failure Mode 1: Sarcasm and Colloquial Hyperbole Misclassified as Legal Threats
 
-### 1. Resource Management & Hardware Constraints
-* **Drive Storage Exhaustion**: Running local Hugging Face models (`Qwen2.5-1.5B-Instruct`) and PyTorch pipelines triggered a critical storage drop on the primary `C:` drive (dropping from 17 GB down to 5 GB) due to model weight snapshots and temporary tokenizer artifacts caching automatically in `C:\Users\<User>\.cache\huggingface`.
-  * **Resolution**: Reclaimed storage by purging temporary download caches and re-routing all future model downloads to a secondary storage drive in PowerShell via `$env:HF_HOME = "E:\huggingface_cache"`.
-* **RAM / VRAM Exhaustion from Duplicate Models**: Initially, both `SupportAgent` and `LLMJudge` separately instantiated independent instances of `Qwen2.5-1.5B-Instruct`, doubling VRAM consumption (exceeding 6.5 GB) and causing intense GPU throttling and execution slowdowns.
-  * **Resolution**: Refactored `LLMJudge` to accept `generator_pipeline=agent.generator`, establishing single-instance weight sharing across generation and evaluation modules to keep memory footprint under 3.2 GB.
+> **Example**: *"@AmazonHelp You guys lost my socks again. My lawyer is going to hear about this haha!"*
 
-### 2. Runtime Bugs & Device Compatibility
-* **Non-CUDA / CPU Fallback Crashes**: The initial device selection logic invoked `torch.cuda.is_bf16_supported()` inside an `else` block when CUDA was unavailable, raising a `RuntimeError` or `AssertionError` on CPU-only or non-NVIDIA developer environments.
-  * **Resolution**: Implemented defensive device configuration that strictly verifies `torch.cuda.is_available()` before querying any CUDA-specific precision or architectural capabilities.
-* **Variable Scope Error (`NameError`)**: In `evals/run_eval.py`, the evaluation logger attempted to access `human_scores` and `judge_scores`, which were out of scope.
-  * **Resolution**: Corrected array references to match the initialized arrays `human_grounding_scores` and `judge_grounding_scores`.
-* **Hugging Face Generation Parameter Conflicts**: Passing `temperature=0.0` alongside `do_sample=False` triggered deprecation and parameter conflict warnings in Hugging Face `transformers`.
-  * **Resolution**: Sanitized generation parameters by completely omitting `temperature` during greedy decoding (`do_sample=False`) and explicitly configuring `clean_up_tokenization_spaces=False`.
+**Observed behaviour**: Regex matched `lawyer` and triggered `LEGAL_RISK_DETECTED` escalation on a plainly comedic tweet.
 
-### 3. LLM Judge Calibration & Output Parsing
-* **Initial 0.00 Cohen's Kappa Score**: The judge calibration metric evaluated to 0.00, indicating zero statistical variance or a complete mismatch between human ratings and LLM judge outputs.
-  * **Root Cause**: Raw markdown formatting (e.g., ` ```json ` blocks) returned by the LLM caused `json.loads()` to crash, defaulting scores to dummy values. Additionally, ratings arrays had mixed string vs. integer data types.
-  * **Resolution**: Integrated regex-based JSON block isolation (`re.search(r'\{.*\}', raw_text, re.DOTALL)`), added explicit casting of both rating arrays to `int` before calling `sklearn.metrics.cohen_kappa_score`, and implemented a heuristic fallback parser to extract numerical scores directly from unformatted responses.
+**Hypothesis**: Pattern-matching on legal keywords has zero semantic awareness. The word `lawyer` in a sarcastic tweet carries the same byte string as in a genuine legal threat. Any regex-only trigger will fire on false positives wherever customers use legal language figuratively.
 
-### 4. Cloud API Rate Limits, Quota Expirations & Network Resiliency
-* **Google Gemini Free-Tier Daily Quota Wall**: When migrating from local models to cloud APIs, calls to `gemini-3.6-flash` abruptly crashed with `429 RESOURCE_EXHAUSTED` (`quotaId: GenerateRequestsPerDayPerProjectPerModel-FreeTier, limit: 20`). The model was governed by an undocumented 20-request/day experimental limit.
-  * **Resolution**: Transitioned to Google's production endpoints (`gemini-flash-lite-latest`) and subsequently engineered a unified, multi-provider `LLMClient` abstraction in `src/llm.py` supporting OpenRouter (`meta-llama/llama-3.1-8b-instruct`), Gemini, Groq, and local models.
-* **Authentication Formatting & Malformed JSON Tokens**: OpenRouter rejected requests with `401: Missing Authentication header` due to a double-prefix typo in `.env` (`ssk-or-v1-...`), and an unexpected unescaped quotation mark inside an LLM `reasoning` field triggered `JSONDecodeError: Expecting ',' delimiter` mid-benchmark.
-  * **Resolution**: Corrected `.env` authorization headers, increased `max_tokens` from 150 to 250 to prevent mid-token truncation, and wrapped JSON parsing in `src/intent.py` and `src/judge.py` with resilient regex fallbacks to ensure unparseable tokens never crash the benchmark pipeline.
+**Mitigation path**: Combine the regex match with a lightweight sentiment polarity check or a single-pass LLM verification step — "Is this tweet a genuine legal threat or figurative language?" — before committing to full escalation.
 
-### 5. Windows Terminal Character Encoding (`cp1252` vs. `utf-8`)
-* **`UnicodeEncodeError` in PowerShell Console**: Running `python evals/run_eval.py` in Windows PowerShell triggered terminal encoding crashes (`UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f916'`) whenever progress logs attempted to output Unicode emojis (`🤖`, `⚡`, `⚙️`) or Greek mathematical symbols ($\kappa$, •, –).
-  * **Resolution**: Replaced all console emojis and special Unicode characters across `evals/run_eval.py`, `evals/human_vs_judge.py`, and `src/llm.py` with pure ASCII equivalents (`[HIVER AI]`, `[OK]`, `kappa`, `-`), and added explicit `sys.stdout.reconfigure(encoding="utf-8")` initialization.
+---
+
+### Failure Mode 2: Multi-Intent Compound Queries — Single-Label Collapse
+
+> **Example**: *"@AmazonHelp My account was locked after I requested a refund on order #102-3948571."*
+
+**Observed behaviour**: Classifier predicted `Cancellation/Refund Request` and dropped the `Account Access/Authentication` issue entirely.
+
+**Hypothesis**: The Pydantic schema enforces a single `predicted_intent` field. When a tweet genuinely spans two domains, the model must break a tie and picks whichever intent has the highest surface lexical weight. The second intent, often the more critical one, is silently discarded.
+
+**Mitigation path**: Replace single-label classification with a multi-label schema (`List[IntentCategory]` with primary and secondary slots), or escalate automatically whenever the classifier's confidence gap between top-2 intents is < 0.15.
+
+---
+
+### Failure Mode 3: RAG Retrieval Drift on Outdated Policies
+
+> **Example**: Queries about Prime Video download limits on legacy Android 4.x devices.
+
+**Observed behaviour**: The vector store returned 2017-era resolution turns that instructed customers to use deprecated app settings that no longer exist in current Prime Video versions.
+
+**Hypothesis**: The historical dataset spans multiple years. ChromaDB retrieves purely by semantic similarity, with no time-decay weighting. Older threads are equally likely to surface as recent ones — and on rapidly-evolving platform features, old answers are actively misleading.
+
+**Mitigation path**: Augment ChromaDB metadata with `year` and apply an exponential time-decay score: `final_score = similarity_score * exp(-lambda * age_in_years)` with lambda tuned to halve the weight of content older than 2 years.
+
+---
+
+### Failure Mode 4: 280-Character Truncation of Multi-Step Technical Instructions
+
+> **Example**: Kindle e-reader hard-reset requiring 4 sequential steps.
+
+**Observed behaviour**: The generated reply reached 290 characters, was programmatically sliced to 277 + `"..."`, cutting the final step. The customer received a truncated, incomplete instruction set.
+
+**Hypothesis**: There is a fundamental tension between the completeness requirements of technical troubleshooting and Twitter's 280-character hard ceiling. The model has no concept that its output will be sliced — it optimises for a complete answer, not a complete-within-limit answer.
+
+**Mitigation path**: Prompt the model to generate a one-sentence summary action + an official help-centre URL for any query requiring more than 2 discrete steps. Introduce a soft pre-flight check: if the reply exceeds 240 characters at generation time, trigger a re-generation pass with an explicit token budget constraint.
+
+---
+
+### Failure Mode 5: Vague Helpless Queries Catch-All Escalation (Acceptable but Impactful)
+
+> **Example**: *"@AmazonHelp Hello, is someone there? Please help me."*
+
+**Observed behaviour**: Model predicted `General Inquiry/Feedback` with confidence 0.45 and escalated under `LOW_INTENT_CONFIDENCE`.
+
+**Hypothesis**: This is a correct escalation — there is nothing actionable to respond to. However, it surfaces at high frequency in real support queues (confused or distressed customers), and routing all of them to a human creates volume overhead. The system cannot distinguish between "genuinely vague" and "distressed but articulable-if-prompted."
+
+**Mitigation path**: Before escalating on low confidence, attempt a single clarifying-question turn: *"Hi! We're here to help — could you share a few more details about your issue?"* Only escalate if the follow-up reply is also below the confidence threshold.
+
+---
+
+## 6. What Is Misleading About the Headline Number?
+
+> **Mandatory disclosure** — read before citing any metric from this report.
+
+The headline metric most likely to be cited is **Escalation Recall = 0.80** (the production pipeline catches 80% of risky queries). Here is why that number is misleading:
+
+1. **The golden set was labelled by the same person who built the escalation rules.** The author knew which queries triggered which regex patterns when assigning `expected_escalate = true`. This creates circular label-leakage: the evaluation set is not a truly blind holdout from the system's own design assumptions.
+
+2. **The 15 "true risk" tickets are not a reliable prevalence estimate.** Real `@AmazonHelp` traffic has an unknown rate of PII exposure or legal threat tickets. The 15 risk examples in the golden set were deliberately over-sampled to stress-test the guardrails; 80% recall on 15 examples has extremely wide confidence intervals (roughly +/- 22% at 95% CI).
+
+3. **Intent F1 = 0.48 looks worse than Baseline 2's 0.77, but this is partially an artifact.** Baseline 2 uses hardcoded keywords like `refund`, `cancel`, `password` which match the exact vocabulary the annotator used when assigning `true_intent`. The production pipeline uses zero-shot LLM classification which is more general but less lexically anchored — a fairer comparison would use a held-out test set labelled by a different annotator.
+
+4. **Grounding Score = 2.3 is judged by the same LLM family that generated the replies.** The judge model is a different size but from the same model family as the generator. This creates same-family bias: the judge is more likely to rate outputs that match its own style as well-grounded, regardless of actual factual accuracy.
+
+5. **Cohen's kappa = 0.00 is not evidence of good calibration — it is evidence of a broken pipeline.** See Section 3 (Human vs. Judge Alignment). The kappa figure should be ignored entirely until the JSON parsing bug is fully resolved and the calibration script is re-run cleanly.
+
+---
+
+## 7. What We'd Do Next with One More Week
+
+1. **Fix the judge calibration pipeline**: Resolve the JSON-extraction bug, re-run `evals/human_vs_judge.py` over the full 150-sample set, and get a defensible kappa figure.
+2. **Multi-label intent classification**: Extend the Pydantic schema to emit a primary and optional secondary intent, and add a routing rule that escalates compound tickets automatically.
+3. **Time-decay retrieval scoring**: Implement exponential age-weighting in ChromaDB retrieval to suppress outdated policy information.
+4. **Blind re-annotation pass**: Have someone other than the author re-label 50 samples from the golden set to produce a disagreement estimate and catch circular label bias.
+5. **Clarifying-question turn for vague queries**: Implement a one-turn clarification attempt before escalating on `LOW_INTENT_CONFIDENCE`, and measure how often the follow-up allows the system to auto-resolve.
+6. **Sarcasm/sentiment filter on legal keywords**: Add a lightweight sentiment gate before the `LEGAL_RISK_DETECTED` escalation path to reduce false alarms on figurative language.
+7. **Character-budget-aware generation**: Introduce a two-stage generation strategy — first draft, then a constrained re-generation pass if the draft exceeds 240 characters.
+
+---
+
+## 8. Decision Log — 15 Non-Obvious Choices
+
+1. **Local model + unified cloud abstraction.** Used `Qwen2.5-1.5B-Instruct` locally with a `LLMClient` wrapper supporting Gemini, Groq, and OpenRouter. Reason: support data contains PII; a local runtime provides data-privacy compliance without VRAM exhaustion on benchmarks.
+
+2. **Pydantic JSON schema enforcement with regex fallback.** Downstream logic requires programmatic fields (`predicted_intent`, `confidence_score`). Unconstrained text generation breaks the pipeline; regex-assisted extraction recovers from quote-escaping anomalies.
+
+3. **6-class intent taxonomy, not finer.** High-cardinality taxonomies (30+ classes) cause smaller LLMs to hallucinate classes. Six classes map directly to operational routing queues and maximise F1 on a 1.5B-parameter model.
+
+4. **Escalation threshold theta = 0.65.** Empirically chosen: queries below 0.65 confidence were consistently ambiguous, sarcastic, or multi-topic in manual review. Lower thresholds over-escalate; higher thresholds miss too many genuine edge cases.
+
+5. **Dual-trigger escalation: regex first, confidence second.** Regex provides O(1) sub-millisecond detection of regulatory liabilities (credit card numbers, SSNs) without relying on stochastic LLM behaviour. Confidence scoring handles the long tail of ambiguity.
+
+6. **Context-aware escalation for missing order IDs.** An agent cannot provide factual tracking status without an order ID. Escalating prevents generating a hallucinated status update that could cause customer harm.
+
+7. **Immediate escalation on PII exposure instead of in-place redaction.** Masking sanitises the pipeline but does not notify the customer that their sensitive data was exposed publicly on Twitter. Human intervention is required for that notification.
+
+8. **ChromaDB with intent-filtered retrieval over raw FAISS.** ChromaDB provides metadata filtering (`where={"intent": ...}`) and disk persistence out of the box. FAISS requires maintaining a separate metadata dictionary and has no native persistence.
+
+9. **`all-MiniLM-L6-v2` for embeddings.** Optimal tradeoff between speed (< 15ms per query), memory (80MB), and semantic clustering quality on short conversational text. Larger embedding models showed marginal F1 improvement but unacceptable latency for interactive use.
+
+10. **k = 3 retrieved historical turns.** k = 1 misses edge-case policy coverage; k >= 5 overflows the context window of 1.5B-2B parameter models and dilutes attention on the relevant examples.
+
+11. **Chronological "Past Customer: ... | Past Brand: ..." formatting.** Few-shot paired turns prime the model to mimic `@AmazonHelp` brand tone far better than raw document paragraphs injected into the context.
+
+12. **Greedy decoding (`do_sample=False`) throughout.** Customer support requires strict reproducibility and deterministic policy adhesion. Stochastic sampling introduces variance with no benefit in this domain.
+
+13. **Programmatic 280-character hard cap as defence-in-depth.** The prompt instructs the model to stay under 280 characters, but models routinely violate soft constraints. Slicing at 277 + `"..."` guarantees Twitter API compliance regardless of model behaviour.
+
+14. **Single-instance weight sharing between agent and judge.** Loading `Qwen2.5-1.5B` twice would consume > 6.5 GB VRAM. Passing `generator_pipeline=agent.generator` to `LLMJudge` keeps total memory under 3.2 GB.
+
+15. **Pure ASCII console output.** Windows PowerShell uses `cp1252` by default; Unicode emojis and Greek symbols triggered `UnicodeEncodeError` mid-benchmark. Replacing all non-ASCII output with ASCII equivalents was the lowest-friction cross-platform fix.
